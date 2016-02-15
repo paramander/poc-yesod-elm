@@ -117,6 +117,7 @@ runPageForm f = do
         RemoteFormFailure errors ->
             return . object $ map (uncurry (.=)) errors
 
+toConnectionString :: String -> ConnectionString
 toConnectionString s = case parseURI s of
     Nothing -> error "Invalid database url provided"
     Just uri -> do
