@@ -13,6 +13,8 @@ import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
 import Data.Text (Text)
 import Yesod.Form.Remote
+import System.Environment (lookupEnv)
+import Data.Maybe (maybe)
 
 data App = App
     { appConnPool :: ConnectionPool
@@ -90,14 +92,15 @@ deletePageR id = do
 
 main :: IO ()
 main = do
-    -- TODO: (Mats Rietdijk) use env for PORT & DATABASE_URL
+    port <- lookupEnv "PORT" >>= return . maybe 3000 read
+    -- TODO: (Mats Rietdijk) use env for DATABASE_URL
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
     let mkFoundation appConnPool = App {..}
         tmpFoundation = mkFoundation $ error "fake connection pool"
         logFunc = messageLoggerSource tmpFoundation appLogger
     pool <- flip runLoggingT logFunc $ createPostgresqlPool "" 10
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
-    warp 3000 $ mkFoundation pool
+    warp port $ mkFoundation pool
 
 runPageForm :: (Page -> Handler Value) -> Handler Value
 runPageForm f = do
