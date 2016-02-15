@@ -12,6 +12,7 @@ import Control.Monad.Logger (runLoggingT)
 import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
 import Data.Text (Text)
+import Yesod.Form.Remote
 
 data App = App
     { appConnPool :: ConnectionPool
@@ -46,6 +47,9 @@ instance YesodPersist App where
         runSqlPool action $ appConnPool master
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
+instance RenderMessage App FormMessage where
+    renderMessage _ _ (MsgInputNotFound _) = "REQUIRED"
+    renderMessage _ _ msg = defaultFormMessage msg
 
 getHomeR :: Texts -> Handler Html
 getHomeR _ = defaultLayout [whamlet|Hello World!|]
@@ -57,10 +61,11 @@ getPagesR = do
 
 postPagesR :: Handler Value
 postPagesR = do
-    -- TODO: (Mats Rietdijk) use form
-    let page = Page "title" "<p>created</p>"
-    id <- runDB $ insert page
-    return $ object ["page" .= (Entity id page)]
+    runPageForm insertPage
+    where
+        insertPage page = do
+            id <- runDB $ insert page
+            return $ object ["page" .= (Entity id page)]
 
 getPageR :: PageId -> Handler Value
 getPageR id = do
@@ -69,12 +74,12 @@ getPageR id = do
 
 putPageR :: PageId -> Handler Value
 putPageR id = do
-    -- TODO: (Mats Rietdijk) use form
-    let page = Page "title" "<p>updated</p>"
-    runDB $ do
-        get404 id
-        replace id page
-    return $ object ["page" .= (Entity id page)]
+    runDB $ get404 id
+    runPageForm updatePage
+    where
+        updatePage page = do
+            runDB $ replace id page
+            return $ object ["page" .= (Entity id page)]
 
 deletePageR :: PageId -> Handler Value
 deletePageR id = do
@@ -93,3 +98,14 @@ main = do
     pool <- flip runLoggingT logFunc $ createPostgresqlPool "" 10
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
     warp 3000 $ mkFoundation pool
+
+runPageForm :: (Page -> Handler Value) -> Handler Value
+runPageForm f = do
+    result <- runRemotePost $ Page
+        <$> rreq textField "title"
+        <*> rreq textField "content"
+    case result of
+        RemoteFormSuccess page ->
+            f page
+        RemoteFormFailure errors ->
+            return . object $ map (uncurry (.=)) errors

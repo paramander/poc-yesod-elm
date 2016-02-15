@@ -62,3 +62,4 @@ executable         poc-yesod-elm
                  , containers
                  , vector
                  , time
+                 , yesod-form-remote
