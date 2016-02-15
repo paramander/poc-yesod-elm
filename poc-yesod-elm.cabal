@@ -63,3 +63,4 @@ executable         poc-yesod-elm
                  , vector
                  , time
                  , yesod-form-remote
+                 , network-uri

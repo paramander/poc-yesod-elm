@@ -4,17 +4,21 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE RecordWildCards       #-}
 
-import Yesod
-import Database.Persist.Sql (ConnectionPool, SqlBackend, runSqlPool)
-import Database.Persist.Postgresql
-import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet)
 import Control.Monad.Logger (runLoggingT)
+import Data.Maybe (maybe)
+import Data.Monoid ((<>))
+import Data.Text (Text, pack)
+import Data.Text.Encoding (encodeUtf8)
+import Database.Persist.Postgresql
+import Database.Persist.Sql (ConnectionPool, SqlBackend, runSqlPool)
+import Network.URI
+import System.Environment (getEnv, lookupEnv)
+import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet)
+import Yesod
 import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
-import Data.Text (Text)
 import Yesod.Form.Remote
-import System.Environment (lookupEnv)
-import Data.Maybe (maybe)
+import qualified Data.Text as T
 
 data App = App
     { appConnPool :: ConnectionPool
@@ -93,12 +97,12 @@ deletePageR id = do
 main :: IO ()
 main = do
     port <- lookupEnv "PORT" >>= return . maybe 3000 read
-    -- TODO: (Mats Rietdijk) use env for DATABASE_URL
+    dbConnString <- getEnv "DATABASE_URL" >>= return . toConnectionString
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
     let mkFoundation appConnPool = App {..}
         tmpFoundation = mkFoundation $ error "fake connection pool"
         logFunc = messageLoggerSource tmpFoundation appLogger
-    pool <- flip runLoggingT logFunc $ createPostgresqlPool "" 10
+    pool <- flip runLoggingT logFunc $ createPostgresqlPool dbConnString 10
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
     warp port $ mkFoundation pool
 
@@ -112,3 +116,23 @@ runPageForm f = do
             f page
         RemoteFormFailure errors ->
             return . object $ map (uncurry (.=)) errors
+
+toConnectionString s = case parseURI s of
+    Nothing -> error "Invalid database url provided"
+    Just uri -> do
+        let uaps = case uriAuthority uri of
+                Nothing ->
+                    []
+                Just auth ->
+                    [ ("dbuser", fst up)
+                    , ("password", T.drop 1 $ snd up)
+                    , ("host", pack $ uriRegName auth)
+                    , ("port", T.drop 1 . pack $ uriPort auth)
+                    ]
+                    where
+                        up :: (Text, Text)
+                        up = T.breakOn ":" . T.dropEnd 1 . pack $ uriUserInfo auth
+        encodeUtf8 . joinParts $ uaps ++ [("dbname", T.drop 1 . T.pack $ uriPath uri)]
+    where
+        joinParts :: [(Text, Text)] -> Text
+        joinParts = T.unwords . map (\(a, b) -> a <> "=" <> b) . filter (not . T.null . snd)
