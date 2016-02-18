@@ -8,6 +8,12 @@ import Data.Text (Text)
 
 data PageApi = PageApi
 
+class ( Yesod master
+      , YesodPersist master
+      , YesodPersistBackend master ~ SqlBackend
+      , RenderMessage master FormMessage
+      ) => PageSubApi master
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Page
     name Text
@@ -27,9 +33,5 @@ instance ToJSON (Entity Page) where
         , "body" .= pageHtml p
         ]
 
-type PageHandler a = forall master.
-    ( Yesod master
-    , YesodPersist master
-    , YesodPersistBackend master ~ SqlBackend
-    , RenderMessage master FormMessage
-    ) => HandlerT PageApi (HandlerT master IO) a
+type Handler a = forall master. PageSubApi master => HandlerT master IO a
+type PageHandler a = forall master. PageSubApi master => HandlerT PageApi (HandlerT master IO) a

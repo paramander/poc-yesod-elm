@@ -10,11 +10,7 @@ import Database.Persist.Postgresql
 import Yesod
 import Yesod.Form.Remote
 
-instance ( Yesod master
-         , YesodPersist master
-         , YesodPersistBackend master ~ SqlBackend
-         , RenderMessage master FormMessage
-         ) => YesodSubDispatch PageApi (HandlerT master IO) where
+instance PageSubApi master => YesodSubDispatch PageApi (HandlerT master IO) where
     yesodSubDispatch = $(mkYesodSubDispatch resourcesPageApi)
 
 getPagesR :: PageHandler Value
@@ -26,6 +22,7 @@ postPagesR :: PageHandler Value
 postPagesR = lift $ do
     runPageForm insertPage
     where
+        insertPage :: Page -> Handler Value
         insertPage page = do
             id <- runDB $ insert page
             return $ object ["page" .= (Entity id page)]
@@ -40,6 +37,7 @@ putPageR id = lift $ do
     runDB $ get404 id
     runPageForm updatePage
     where
+        updatePage :: Page -> Handler Value
         updatePage page = do
             runDB $ replace id page
             return $ object ["page" .= (Entity id page)]
@@ -51,6 +49,7 @@ deletePageR id = lift $ do
         delete id
     return $ object ["page" .= object ["id" .= (toPathPiece id)]]
 
+runPageForm :: (Page -> Handler Value) -> Handler Value
 runPageForm f = do
     result <- runRemotePost $ Page
         <$> rreq textField "title"

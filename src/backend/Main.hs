@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE RecordWildCards       #-}
 
-import Api.Page
+import Api.Page hiding (Handler)
 import Control.Monad.Logger (runLoggingT)
 import Database.Persist.Postgresql
 import System.Environment (lookupEnv)
@@ -36,6 +36,7 @@ instance YesodPersistRunner App where
 instance RenderMessage App FormMessage where
     renderMessage _ _ (MsgInputNotFound _) = "REQUIRED"
     renderMessage _ _ msg = defaultFormMessage msg
+instance PageSubApi App
 
 getHomeR :: Texts -> Handler Html
 getHomeR _ = defaultLayout [whamlet|Hello World!|]
