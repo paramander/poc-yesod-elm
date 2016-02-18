@@ -4,6 +4,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE RecordWildCards       #-}
 
+import Api.Page
 import Control.Monad.Logger (runLoggingT)
 import Database.Persist.Postgresql
 import System.Environment (lookupEnv)
@@ -11,32 +12,16 @@ import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet)
 import Yesod
 import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
-import Yesod.Form.Remote
-import Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS
 
 data App = App
     { appConnPool :: ConnectionPool
     , appLogger :: Logger
+    , getPageApi :: PageApi
     }
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Page
-    name Text
-    html Text
-    deriving Show
-|]
-
-instance ToJSON (Entity Page) where
-    toJSON (Entity pid p) = object
-        [ "id" .= (toPathPiece pid)
-        , "title" .= pageName p
-        , "body" .= pageHtml p
-        ]
-
 mkYesod "App" [parseRoutes|
-/api/pages PagesR GET POST
-/api/pages/#PageId PageR GET PUT DELETE
+/api/pages PageApiR PageApi getPageApi
 !/+Texts HomeR GET
 |]
 
@@ -55,59 +40,15 @@ instance RenderMessage App FormMessage where
 getHomeR :: Texts -> Handler Html
 getHomeR _ = defaultLayout [whamlet|Hello World!|]
 
-getPagesR :: Handler Value
-getPagesR = do
-    posts <- runDB $ selectList [] [] :: Handler [Entity Page]
-    return $ object ["pages" .= posts]
-
-postPagesR :: Handler Value
-postPagesR = do
-    runPageForm insertPage
-    where
-        insertPage page = do
-            id <- runDB $ insert page
-            return $ object ["page" .= (Entity id page)]
-
-getPageR :: PageId -> Handler Value
-getPageR id = do
-    page <- runDB $ get404 id
-    return $ object ["page" .= (Entity id page)]
-
-putPageR :: PageId -> Handler Value
-putPageR id = do
-    runDB $ get404 id
-    runPageForm updatePage
-    where
-        updatePage page = do
-            runDB $ replace id page
-            return $ object ["page" .= (Entity id page)]
-
-deletePageR :: PageId -> Handler Value
-deletePageR id = do
-    runDB $ do
-        get404 id
-        delete id
-    return $ object ["page" .= object ["id" .= (toPathPiece id)]]
-
 main :: IO ()
 main = do
     port <- lookupEnv "PORT" >>= return . maybe 3000 read
     dbConnString <- lookupEnv "DATABASE_URL" >>= return . maybe "postgresql://localhost/poc-yesod-elm" BS.pack
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
-    let mkFoundation appConnPool = App {..}
+    let getPageApi = PageApi
+        mkFoundation appConnPool = App {..}
         tmpFoundation = mkFoundation $ error "fake connection pool"
         logFunc = messageLoggerSource tmpFoundation appLogger
     pool <- flip runLoggingT logFunc $ createPostgresqlPool dbConnString 10
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
     warp port $ mkFoundation pool
-
-runPageForm :: (Page -> Handler Value) -> Handler Value
-runPageForm f = do
-    result <- runRemotePost $ Page
-        <$> rreq textField "title"
-        <*> rreq textField "content"
-    case result of
-        RemoteFormSuccess page ->
-            f page
-        RemoteFormFailure errors ->
-            return . object $ map (uncurry (.=)) errors
