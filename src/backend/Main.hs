@@ -125,7 +125,7 @@ toConnectionString s = case parseURI s of
                 Nothing ->
                     []
                 Just auth ->
-                    [ ("dbuser", fst up)
+                    [ ("user", fst up)
                     , ("password", T.drop 1 $ snd up)
                     , ("host", pack $ uriRegName auth)
                     , ("port", T.drop 1 . pack $ uriPort auth)
