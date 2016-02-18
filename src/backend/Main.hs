@@ -5,20 +5,15 @@
 {-# LANGUAGE RecordWildCards       #-}
 
 import Control.Monad.Logger (runLoggingT)
-import Data.Maybe (maybe)
-import Data.Monoid ((<>))
-import Data.Text (Text, pack)
-import Data.Text.Encoding (encodeUtf8)
 import Database.Persist.Postgresql
-import Database.Persist.Sql (ConnectionPool, SqlBackend, runSqlPool)
-import Network.URI
-import System.Environment (getEnv, lookupEnv)
+import System.Environment (lookupEnv)
 import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet)
 import Yesod
 import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
 import Yesod.Form.Remote
-import qualified Data.Text as T
+import Data.Text (Text)
+import qualified Data.ByteString.Char8 as BS
 
 data App = App
     { appConnPool :: ConnectionPool
@@ -97,7 +92,7 @@ deletePageR id = do
 main :: IO ()
 main = do
     port <- lookupEnv "PORT" >>= return . maybe 3000 read
-    dbConnString <- getEnv "DATABASE_URL" >>= return . toConnectionString
+    dbConnString <- lookupEnv "DATABASE_URL" >>= return . maybe "postgresql://localhost/poc-yesod-elm" BS.pack
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
     let mkFoundation appConnPool = App {..}
         tmpFoundation = mkFoundation $ error "fake connection pool"
@@ -116,24 +111,3 @@ runPageForm f = do
             f page
         RemoteFormFailure errors ->
             return . object $ map (uncurry (.=)) errors
-
-toConnectionString :: String -> ConnectionString
-toConnectionString s = case parseURI s of
-    Nothing -> error "Invalid database url provided"
-    Just uri -> do
-        let uaps = case uriAuthority uri of
-                Nothing ->
-                    []
-                Just auth ->
-                    [ ("user", fst up)
-                    , ("password", T.drop 1 $ snd up)
-                    , ("host", pack $ uriRegName auth)
-                    , ("port", T.drop 1 . pack $ uriPort auth)
-                    ]
-                    where
-                        up :: (Text, Text)
-                        up = T.breakOn ":" . T.dropEnd 1 . pack $ uriUserInfo auth
-        encodeUtf8 . joinParts $ uaps ++ [("dbname", T.drop 1 . T.pack $ uriPath uri)]
-    where
-        joinParts :: [(Text, Text)] -> Text
-        joinParts = T.unwords . map (\(a, b) -> a <> "=" <> b) . filter (not . T.null . snd)
