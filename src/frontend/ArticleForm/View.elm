@@ -37,18 +37,18 @@ viewForm address model =
         [ i [ class "fa fa-pencil" ] []
         , text "Add new article"
         ]
-      , lazy2 nameInput address model.articleForm.name
-      , lazy2 bodyInput address model.articleForm.body
+      , lazy2 titleInput address model.articleForm.title
+      , lazy2 contentInput address model.articleForm.content
       , button
           [ onClick address ArticleForm.Update.SubmitForm
           , class "btn btn-primary"
-          , disabled (String.isEmpty model.articleForm.name)
+          , disabled (String.isEmpty model.articleForm.title)
           ]
           [ text "Submit" ]
       ]
 
-nameInput : Signal.Address Action -> String -> Html
-nameInput address title =
+titleInput : Signal.Address Action -> String -> Html
+titleInput address title =
   div
     [ class "input" ]
     [
@@ -60,13 +60,13 @@ nameInput address title =
         , placeholder "Title"
         , value title
         , name "title"
-        , on "input" targetValue (Signal.message address << ArticleForm.Update.UpdateName)
+        , on "input" targetValue (Signal.message address << ArticleForm.Update.UpdateTitle)
         ]
         []
     ]
 
-bodyInput : Signal.Address Action -> String -> Html
-bodyInput address body =
+contentInput : Signal.Address Action -> String -> Html
+contentInput address content =
   div
     [ class "input" ]
     [
@@ -75,11 +75,11 @@ bodyInput address body =
          [ text "content" ]
     , textarea
         [ id "article-body"
-        , value body
-        , name "body"
-        , on "input" targetValue (Signal.message address << ArticleForm.Update.UpdateBody)
+        , value content
+        , name "content"
+        , on "input" targetValue (Signal.message address << ArticleForm.Update.UpdateContent)
         ]
-        [ text body ]
+        [ text content ]
     ]
 
 sluggify : String -> String

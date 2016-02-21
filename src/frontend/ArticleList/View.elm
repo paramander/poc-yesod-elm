@@ -33,14 +33,14 @@ viewArticle : Article -> Html
 viewArticle article =
   li
     [ class "page-item" ]
-      [ p [] [ span [ class "title" ] [ text article.name ]
+      [ p [] [ span [ class "title" ] [ text article.title ]
              , span [ class "exerpt"] [ text (exerpt 10 article) ]
              ]
       ]
 
 exerpt : Int -> Article -> String
 exerpt length article =
-  if String.length article.body > length then
-    String.left length (String.trim article.body) ++ "..."
+  if String.length article.content > length then
+    String.left length (String.trim article.content) ++ "..."
   else
-    article.body
+    article.content

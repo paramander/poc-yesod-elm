@@ -17,8 +17,8 @@ init = ( initialModel
 
 type Action = ResetForm
             | SubmitForm
-            | UpdateBody String
-            | UpdateName String
+            | UpdateContent String
+            | UpdateTitle String
             | UpdatePostArticle (Result Http.Error Article.Model)
 
 type alias Model = ArticleForm.Model
@@ -34,7 +34,7 @@ update action model =
       , Nothing
       )
     SubmitForm ->
-      let url = "http://localhost:3000/api/posts"
+      let url = "http://localhost:3000/api/pages"
       in
         if model.postStatus == ArticleForm.Ready
           then
@@ -59,20 +59,20 @@ update action model =
           , Effects.none
           , Nothing
           )
-    UpdateBody val ->
+    UpdateContent val ->
       let
         articleForm = model.articleForm
-        articleForm' = { articleForm | body = val }
+        articleForm' = { articleForm | content = val }
       in
         ( { model | articleForm = articleForm' }
         , Effects.none
         , Nothing
         )
 
-    UpdateName val ->
+    UpdateTitle val ->
       let
         articleForm = model.articleForm
-        articleForm' = { articleForm | name = val }
+        articleForm' = { articleForm | title = val }
       in
         ( { model | articleForm = articleForm' }
         , Effects.none
@@ -93,8 +93,8 @@ dataToJson : ArticleForm.ArticleForm -> String
 dataToJson data =
   JE.encode 0
     <| JE.object
-       [ ("title", JE.string data.name)
-       , ("body", JE.string data.body)
+       [ ("title", JE.string data.title)
+       , ("content", JE.string data.content)
        ]
 
 decodePostArticle : JD.Decoder Article.Model

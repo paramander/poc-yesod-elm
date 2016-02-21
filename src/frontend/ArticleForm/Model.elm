@@ -4,8 +4,8 @@ type PostStatus = Busy
                 | Done
                 | Ready
 
-type alias ArticleForm = { name : String
-                         , body : String
+type alias ArticleForm = { title : String
+                         , content : String
                          , show : Bool
                          }
 
@@ -18,8 +18,8 @@ type alias Model = { articleForm : ArticleForm
                    }
 
 initialArticleForm : ArticleForm
-initialArticleForm = { name = ""
-                     , body = ""
+initialArticleForm = { title = ""
+                     , content = ""
                      , show = True
                      }
 

@@ -9,4 +9,4 @@ decode =
   JD.object3 Article.Model
     ("id" := JD.int)
     ("title" := JD.string)
-    ("body" := JD.string)
+    ("content" := JD.string)

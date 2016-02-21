@@ -37,7 +37,7 @@ instance ToJSON (Entity Page) where
     toJSON (Entity pid p) = object
         [ "id" .= (toPathPiece pid)
         , "title" .= pageName p
-        , "body" .= pageHtml p
+        , "content" .= pageHtml p
         ]
 
 mkYesod "App" [parseRoutes|
