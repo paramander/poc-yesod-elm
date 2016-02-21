@@ -11,6 +11,7 @@ import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet)
 import Yesod
 import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
+import Yesod.EmbeddedStatic
 import Yesod.Form.Remote
 import Lucid hiding (Html)
 import Yesod.Lucid
@@ -18,9 +19,12 @@ import Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS
 
 data App = App
-    { appConnPool :: ConnectionPool
+    { appStatic :: EmbeddedStatic
+    , appConnPool :: ConnectionPool
     , appLogger :: Logger
     }
+
+mkEmbeddedStatic False "embeddedStatic" [embedDir "src/static"]
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Page
@@ -37,6 +41,7 @@ instance ToJSON (Entity Page) where
         ]
 
 mkYesod "App" [parseRoutes|
+/static StaticR EmbeddedStatic appStatic
 /api/pages PagesR GET POST
 /api/pages/#PageId PageR GET PUT DELETE
 !/+Texts HomeR GET
@@ -62,6 +67,7 @@ getHomeR _ = lucid $ \url -> do
             title_ "POC Yesod + Elm"
             meta_ [name_ "viewport", content_ "width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"]
             meta_ [charset_ "utf-8"]
+            script_ [type_ "text/javascript", src_ . url $ StaticR app_js] ("" :: Text)
         body_ $ do
             script_ [type_ "text/javascript"] ("Elm.fullscreen(Elm.Main);" :: Text)
 
@@ -104,7 +110,8 @@ main = do
     port <- lookupEnv "PORT" >>= return . maybe 3000 read
     dbConnString <- lookupEnv "DATABASE_URL" >>= return . maybe "postgresql://localhost/poc-yesod-elm" BS.pack
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
-    let mkFoundation appConnPool = App {..}
+    let appStatic = embeddedStatic
+        mkFoundation appConnPool = App {..}
         tmpFoundation = mkFoundation $ error "fake connection pool"
         logFunc = messageLoggerSource tmpFoundation appLogger
     pool <- flip runLoggingT logFunc $ createPostgresqlPool dbConnString 10
