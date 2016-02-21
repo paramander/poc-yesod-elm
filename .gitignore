@@ -11,3 +11,5 @@ cabal.sandbox.config
 *.keter
 *.js
 elm-stuff/
+elm-package.json
+!/elm-package.json
