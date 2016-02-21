@@ -11,7 +11,7 @@ packages:
     commit: 14b7e39cd3038cf30ddb24eb64e916e73985b72e
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps: [yesod-lucid-0.1]
 
 # Override default flag values for local packages and extra-deps
 flags: {}

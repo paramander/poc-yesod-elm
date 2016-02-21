@@ -63,3 +63,5 @@ executable         poc-yesod-elm
                  , vector
                  , time
                  , yesod-form-remote
+                 , lucid
+                 , yesod-lucid

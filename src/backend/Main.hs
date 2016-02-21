@@ -12,6 +12,8 @@ import Yesod
 import Yesod.Core.Types (Logger)
 import Yesod.Default.Config2 (makeYesodLogger)
 import Yesod.Form.Remote
+import Lucid hiding (Html)
+import Yesod.Lucid
 import Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS
 
@@ -52,8 +54,16 @@ instance RenderMessage App FormMessage where
     renderMessage _ _ (MsgInputNotFound _) = "REQUIRED"
     renderMessage _ _ msg = defaultFormMessage msg
 
-getHomeR :: Texts -> Handler Html
-getHomeR _ = defaultLayout [whamlet|Hello World!|]
+getHomeR :: Texts -> Handler LucidHtml
+getHomeR _ = lucid $ \url -> do
+    doctype_
+    html_ [lang_ "nl"] $ do
+        head_ $ do
+            title_ "POC Yesod + Elm"
+            meta_ [name_ "viewport", content_ "width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"]
+            meta_ [charset_ "utf-8"]
+        body_ $ do
+            script_ [type_ "text/javascript"] ("Elm.fullscreen(Elm.Main);" :: Text)
 
 getPagesR :: Handler Value
 getPagesR = do
