@@ -69,7 +69,7 @@ getHomeR _ = lucid $ \url -> do
             meta_ [charset_ "utf-8"]
             script_ [type_ "text/javascript", src_ . url $ StaticR app_js] ("" :: Text)
         body_ $ do
-            script_ [type_ "text/javascript"] ("Elm.fullscreen(Elm.Main);" :: Text)
+            script_ [type_ "text/javascript"] ("Elm.fullscreen(Elm.Main, {initialPath: window.location.pathname});" :: Text)
 
 getPagesR :: Handler Value
 getPagesR = do
