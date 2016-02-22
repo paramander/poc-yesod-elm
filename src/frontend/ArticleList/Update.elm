@@ -51,6 +51,7 @@ update action model =
           , Effects.none
           )
         Err err ->
+          Debug.crash (toString err)
           ( { model | status = ArticleList.Model.HttpError err }
           , Effects.none
           )
