@@ -1,6 +1,7 @@
 module App.Update where
 
 import Effects exposing (Effects, none)
+import Task exposing (succeed)
 import TransitRouter
 
 import App.Model as App exposing (initialModel, Model)
@@ -35,7 +36,9 @@ mountRoute prev route model =
     Router.NewArticlePage ->
       (model, Effects.none)
     Router.ArticleListPage ->
-      (model, Effects.none)
+      ( model
+      , Task.succeed (ChildArticleAction Pages.Article.Update.Activate) |> Effects.task
+      )
     Router.EmptyRoute ->
       (model, Effects.none)
 
