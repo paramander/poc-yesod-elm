@@ -4,6 +4,7 @@ import Effects exposing (Effects)
 import Http exposing (post, Error)
 import Json.Decode as JD
 import Json.Encode as JE exposing (string)
+import String
 import Task exposing (Task)
 
 import Article.Model as Article exposing (Model)
@@ -81,21 +82,20 @@ update action model =
 
 postArticle : String -> ArticleForm.ArticleForm -> Effects Action
 postArticle url data =
-  Http.post
-      decodePostArticle
-      url
-      (Http.string <| dataToJson data)
-      |> Task.toResult
-      |> Task.map UpdatePostArticle
-      |> Effects.task
+  let
+    task = Http.send Http.defaultSettings
+           { verb = "POST"
+           , headers =
+               [ ("Content-Type", "application/x-www-form-urlencoded") ]
+           , url = url
+           , body = Http.string (dataToPost data)
+           }
+  in Http.fromJson decodePostArticle task |> Task.toResult |> Task.map UpdatePostArticle |> Effects.task
 
-dataToJson : ArticleForm.ArticleForm -> String
-dataToJson data =
-  JE.encode 0
-    <| JE.object
-       [ ("title", JE.string data.title)
-       , ("content", JE.string data.content)
-       ]
+dataToPost : ArticleForm.ArticleForm -> String
+dataToPost data =
+  let bogusEncode = Http.url "" [ ("title", data.title), ("content", data.content) ]
+  in String.dropLeft 1 bogusEncode
 
 decodePostArticle : JD.Decoder Article.Model
 decodePostArticle =
