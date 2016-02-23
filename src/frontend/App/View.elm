@@ -9,7 +9,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
-import Pages.PageNotFound.View exposing (view)
+import PageNotFound.View exposing (view)
 
 import ArticleForm.View as ArticleForm exposing (view)
 import ArticleList.View as ArticleList exposing (view)
@@ -55,4 +55,4 @@ mainContent address model =
             ]
             [ ArticleList.view childAddress model.articleList ]
     App.Router.EmptyRoute ->
-      div [] [ Pages.PageNotFound.View.view ]
+      div [] [ PageNotFound.View.view ]
