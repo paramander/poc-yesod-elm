@@ -12,8 +12,6 @@ import Html.Attributes exposing (id, class)
 view : Signal.Address Action -> Article.Model -> Html
 view address model =
   let
-    childArticleFormAddress =
-      Signal.forwardTo address Pages.Article.Update.ChildArticleFormAction
     childArticleListAddress =
       Signal.forwardTo address Pages.Article.Update.ChildArticleListAction
   in

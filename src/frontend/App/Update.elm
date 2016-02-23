@@ -7,11 +7,14 @@ import TransitRouter
 import App.Model as App exposing (initialModel, Model)
 import App.Router as Router
 
-import Pages.Article.Update exposing (Action)
+import ArticleForm.Model exposing (initialModel)
+import ArticleForm.Update exposing (Action)
+import ArticleList.Update exposing (Action)
 
 type alias Model = App.Model
 
-type Action = ChildArticleAction Pages.Article.Update.Action
+type Action = ChildArticleListAction ArticleList.Update.Action
+            | ChildArticleFormAction ArticleForm.Update.Action
             | RouterAction (TransitRouter.Action Router.Route)
             | NoOp
 
@@ -34,10 +37,12 @@ mountRoute : Router.Route -> Router.Route -> Model -> (Model, Effects Action)
 mountRoute prev route model =
   case route of
     Router.NewArticlePage ->
-      (model, Effects.none)
+      ( { model | articleForm = ArticleForm.Model.initialModel }
+      , Effects.none
+      )
     Router.ArticleListPage ->
       ( model
-      , Task.succeed (ChildArticleAction Pages.Article.Update.Activate) |> Effects.task
+      , Task.succeed (ChildArticleListAction ArticleList.Update.GetData) |> Effects.task
       )
     Router.EmptyRoute ->
       (model, Effects.none)
@@ -45,12 +50,19 @@ mountRoute prev route model =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
-    ChildArticleAction act ->
+    ChildArticleListAction act ->
       let
-        (childModel, childEffects) = Pages.Article.Update.update act model.article
+        (childModel, childEffects) = ArticleList.Update.update act model.articleList
       in
-        ( { model | article = childModel }
-        , Effects.map ChildArticleAction childEffects
+        ( { model | articleList = childModel }
+        , Effects.map ChildArticleListAction childEffects
+        )
+    ChildArticleFormAction act ->
+      let
+        (childModel, childEffects, maybeArticle) = ArticleForm.Update.update act model.articleForm
+      in
+        ( { model | articleForm = childModel }
+        , Effects.map ChildArticleFormAction childEffects
         )
     RouterAction routeAction ->
       TransitRouter.update routerConfig routeAction model

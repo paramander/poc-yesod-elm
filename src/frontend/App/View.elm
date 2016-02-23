@@ -9,8 +9,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
-import Pages.Article.View exposing (view)
 import Pages.PageNotFound.View exposing (view)
+
+import ArticleForm.View as ArticleForm exposing (view)
+import ArticleList.View as ArticleList exposing (view)
 
 view : Signal.Address Action -> Model -> Html
 view address model =
@@ -23,13 +25,19 @@ mainContent address model =
   case TransitRouter.getRoute model of
     App.Router.NewArticlePage ->
       let
-        childAddress = Signal.forwardTo address App.Update.ChildArticleAction
+        childAddress = Signal.forwardTo address App.Update.ChildArticleFormAction
       in
-        div [] [ Pages.Article.View.view childAddress model.article ]
+        div [ id "article-page"
+            , class "container"
+            ]
+            [ ArticleForm.view childAddress model.articleForm ]
     App.Router.ArticleListPage ->
       let
-        childAddress = Signal.forwardTo address App.Update.ChildArticleAction
+        childAddress = Signal.forwardTo address App.Update.ChildArticleListAction
       in
-        div [] [ Pages.Article.View.view childAddress model.article ]
+        div [ id "article-page"
+            , class "container"
+            ]
+            [ ArticleList.view childAddress model.articleList ]
     App.Router.EmptyRoute ->
       div [] [ Pages.PageNotFound.View.view ]
