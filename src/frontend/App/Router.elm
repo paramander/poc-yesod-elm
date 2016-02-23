@@ -2,7 +2,8 @@ module App.Router where
 
 import Json.Decode as Json
 import Html exposing (Attribute)
-import Html.Events exposing (on)
+import Html.Attributes exposing (..)
+import Html.Events exposing (on, onWithOptions)
 import Effects exposing (Effects)
 import RouteParser exposing (..)
 import TransitRouter
@@ -34,6 +35,19 @@ redirect route =
   encode route
     |> Signal.send TransitRouter.pushPathAddress
     |> Effects.task
+
+linkAttrs : Route -> List Attribute
+linkAttrs route =
+  let
+    path = encode route
+  in
+    [ href path
+    , onWithOptions
+        "click"
+        { stopPropagation = True, preventDefault = True }
+        Json.value
+        (\_ -> Signal.message TransitRouter.pushPathAddress path)
+    ]
 
 clickAttr : Route -> Attribute
 clickAttr route =

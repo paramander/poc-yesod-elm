@@ -1,8 +1,8 @@
 module App.View where
 
 import App.Model as App exposing (initialModel, Model)
-import App.Update exposing (init, Action)
-import App.Router exposing (Route)
+import App.Update exposing (Action)
+import App.Router exposing (linkAttrs, Route)
 
 import TransitRouter
 import Html exposing (..)
@@ -18,7 +18,22 @@ view : Signal.Address Action -> Model -> Html
 view address model =
   div
     []
-    [ mainContent address model ]
+    [ menuContent address model
+    , mainContent address model
+    ]
+
+menuContent : Signal.Address Action -> Model -> Html
+menuContent address model =
+  header [ ]
+         [ nav [ id "nav" ]
+               [ ul [ id "menu" ]
+                    [ li [ class "menu-item" ]
+                         [ a (linkAttrs App.Router.ArticleListPage) [ text "Articles" ] ]
+                    , li [ class "menu-item" ]
+                         [ a (linkAttrs App.Router.NewArticlePage) [ text "Create article" ] ]
+                    ]
+               ]
+         ]
 
 mainContent : Signal.Address Action -> Model -> Html
 mainContent address model =
