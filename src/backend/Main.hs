@@ -35,10 +35,15 @@ Page
 
 instance ToJSON (Entity Page) where
     toJSON (Entity pid p) = object
-        [ "id" .= (toPathPiece pid)
+        [ "id" .= pid
         , "title" .= pageName p
         , "content" .= pageHtml p
         ]
+
+instance FromJSON Page where
+    parseJSON (Object v) = Page
+        <$> v .: "title"
+        <*> v .: "content"
 
 mkYesod "App" [parseRoutes|
 /static StaticR EmbeddedStatic appStatic
@@ -78,11 +83,9 @@ getPagesR = do
 
 postPagesR :: Handler Value
 postPagesR = do
-    runPageForm insertPage
-    where
-        insertPage page = do
-            id <- runDB $ insert page
-            return $ object ["page" .= (Entity id page)]
+    page <- requireJsonBody :: Handler Page
+    id <- runDB $ insert page
+    return $ object ["page" .= (Entity id page)]
 
 getPageR :: PageId -> Handler Value
 getPageR id = do
@@ -92,11 +95,9 @@ getPageR id = do
 putPageR :: PageId -> Handler Value
 putPageR id = do
     runDB $ get404 id
-    runPageForm updatePage
-    where
-        updatePage page = do
-            runDB $ replace id page
-            return $ object ["page" .= (Entity id page)]
+    page <- requireJsonBody :: Handler Page
+    runDB $ replace id page
+    return $ object ["page" .= (Entity id page)]
 
 deletePageR :: PageId -> Handler Value
 deletePageR id = do
@@ -117,14 +118,3 @@ main = do
     pool <- flip runLoggingT logFunc $ createPostgresqlPool dbConnString 10
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
     warp port $ mkFoundation pool
-
-runPageForm :: (Page -> Handler Value) -> Handler Value
-runPageForm f = do
-    result <- runRemotePost $ Page
-        <$> rreq textField "title"
-        <*> rreq textField "content"
-    case result of
-        RemoteFormSuccess page ->
-            f page
-        RemoteFormFailure errors ->
-            return . object $ map (uncurry (.=)) errors
