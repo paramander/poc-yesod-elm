@@ -20,7 +20,7 @@ type Action = ChildArticleListAction ArticleList.Update.Action
 
 init : String -> (Model, Effects Action)
 init path =
-  TransitRouter.init routerConfig path App.initialModel
+  TransitRouter.init routerConfig path (App.initialModel (Router.decode path))
 
 actions : Signal Action
 actions =

@@ -9,8 +9,9 @@ type alias Model = WithRoute Route { articleForm : ArticleForm.Model
                                    , articleList : ArticleList.Model
                                    }
 
-initialModel : Model
-initialModel = { transitRouter = TransitRouter.empty App.Router.EmptyRoute
-               , articleForm = ArticleForm.initialModel
-               , articleList = ArticleList.initialModel
-               }
+initialModel : Route -> Model
+initialModel route =
+  { transitRouter = TransitRouter.empty route
+  , articleForm = ArticleForm.initialModel
+  , articleList = ArticleList.initialModel
+  }
