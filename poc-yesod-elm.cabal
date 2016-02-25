@@ -3,12 +3,20 @@ version:           0.0.0
 cabal-version:     >= 1.8
 build-type:        Simple
 
+Flag dev
+    Description:   Turn on development settings
+    Default: False
+
 executable         poc-yesod-elm
     hs-source-dirs: src/backend
 
     main-is:        Main.hs
 
-    ghc-options:    -threaded -O2 -rtsopts -with-rtsopts=-N
+    if flag(dev)
+        cpp-options:   -DDEVELOPMENT
+        ghc-options:   -threaded -O0 -rtsopts -with-rtsopts=-N
+    else
+        ghc-options:   -threaded -O2 -rtsopts -with-rtsopts=-N
 
     extensions: TemplateHaskell
                 QuasiQuotes

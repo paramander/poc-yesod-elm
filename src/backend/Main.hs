@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TemplateHaskell       #-}
@@ -24,7 +25,11 @@ data App = App
     , appLogger :: Logger
     }
 
+#if DEVELOPMENT
+mkEmbeddedStatic True "embeddedStatic" [embedDir "src/static"]
+#else
 mkEmbeddedStatic False "embeddedStatic" [embedDir "src/static"]
+#endif
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Page
