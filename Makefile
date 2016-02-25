@@ -1,6 +1,12 @@
-install:
-	elm make src/frontend/Main.elm --output=src/static/app.js
+install: elm
 	stack clean
 	stack install
 
-.PHONY: install
+dev: elm
+	stack clean
+	stack install --flag poc-yesod-elm:dev
+
+elm:
+	elm make src/frontend/Main.elm --output=src/static/app.js
+
+.PHONY: install dev elm
