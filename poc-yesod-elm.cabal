@@ -59,11 +59,12 @@ executable         poc-yesod-elm
                  , directory                     >= 1.1        && < 1.3
                  , warp                          >= 3.0        && < 3.3
                  , data-default
-                 , aeson                         >= 0.6        && < 0.10
+                 , aeson                         >= 0.7        && < 0.10
                  , conduit                       >= 1.0        && < 2.0
                  , monad-logger                  >= 0.3        && < 0.4
                  , fast-logger                   >= 2.2        && < 2.5
                  , wai-logger                    >= 2.2        && < 2.3
+                 , elm-watcher
                  , file-embed
                  , safe
                  , unordered-containers

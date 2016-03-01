@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE RecordWildCards       #-}
 
+import Control.Concurrent (forkIO)
 import Control.Monad.Logger (runLoggingT)
 import Database.Persist.Postgresql
 import System.Environment (lookupEnv)
@@ -18,6 +19,7 @@ import Lucid hiding (Html)
 import Yesod.Lucid
 import Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS
+import qualified Watcher as EW
 
 data App = App
     { appStatic :: EmbeddedStatic
@@ -113,6 +115,11 @@ deletePageR id = do
 
 main :: IO ()
 main = do
+    let elmConfig = EW.WatchConfig { watchDir = "src/frontend"
+                                   , compileFile = "Main.elm"
+                                   , outputDir = "src/static/app.js"
+                                   }
+    forkIO $ EW.watchWithConfig elmConfig
     port <- lookupEnv "PORT" >>= return . maybe 3000 read
     dbConnString <- lookupEnv "DATABASE_URL" >>= return . maybe "postgresql://localhost/poc-yesod-elm" BS.pack
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
