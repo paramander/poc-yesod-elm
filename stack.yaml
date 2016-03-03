@@ -12,9 +12,6 @@ packages:
 - location:
     git: git@github.com:paramanders/elm-watcher.git
     commit: 206307740036e64041b88700876bbd67a0c437e4
-- location:
-    git: git@github.com:paramanders/yesod-form-remote.git
-    commit: 14b7e39cd3038cf30ddb24eb64e916e73985b72e
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps:
