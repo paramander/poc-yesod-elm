@@ -7,11 +7,8 @@ resolver: lts-5.3
 packages:
 - '.'
 - location:
-    git: git@github.com:paramanders/elm-compiler.git
-    commit: 1cce8a3e1eb1df25f026872a4cbac21b1858e594
-- location:
     git: git@github.com:paramanders/elm-watcher.git
-    commit: 206307740036e64041b88700876bbd67a0c437e4
+    commit: 3c744ed8393ec37f7ff788acc386ae2379abf3aa
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps:
