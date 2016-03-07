@@ -8,5 +8,6 @@ dev: elm
 
 elm:
 	elm make src/frontend/Main.elm --output=src/static/app.js
+	elm make src/frontend/Main.elm --output=src/static/admin.js
 
 .PHONY: install dev elm
