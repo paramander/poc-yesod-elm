@@ -11,7 +11,6 @@ import Html.Events exposing (onClick)
 
 import PageNotFound.View exposing (view)
 
-import ArticleForm.View as ArticleForm exposing (view)
 import ArticleList.View as ArticleList exposing (view)
 
 view : Signal.Address Action -> Model -> Html
@@ -29,8 +28,6 @@ menuContent address model =
                [ ul [ id "menu" ]
                     [ li [ class "menu-item" ]
                          [ a (linkAttrs App.Router.ArticleListPage) [ text "Articles" ] ]
-                    , li [ class "menu-item" ]
-                         [ a (linkAttrs App.Router.NewArticlePage) [ text "Create article" ] ]
                     ]
                ]
          ]
@@ -38,14 +35,6 @@ menuContent address model =
 mainContent : Signal.Address Action -> Model -> Html
 mainContent address model =
   case TransitRouter.getRoute model of
-    App.Router.NewArticlePage ->
-      let
-        childAddress = Signal.forwardTo address App.Update.ChildArticleFormAction
-      in
-        div [ id "article-page"
-            , class "container"
-            ]
-            [ ArticleForm.view childAddress model.articleForm ]
     App.Router.ArticleListPage ->
       let
         childAddress = Signal.forwardTo address App.Update.ChildArticleListAction

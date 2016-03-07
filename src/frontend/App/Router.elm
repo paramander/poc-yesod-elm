@@ -8,15 +8,13 @@ import Effects exposing (Effects)
 import RouteParser exposing (..)
 import TransitRouter
 
-type Route = NewArticlePage
-           | ArticleListPage
-           | EmptyRoute
+type Route
+  =  ArticleListPage
+  | EmptyRoute
 
 routeParsers : List (Matcher Route)
 routeParsers =
-  [ static ArticleListPage "/"
-  , static NewArticlePage "/article/new"
-  ]
+  [ static ArticleListPage "/" ]
 
 decode : String -> Route
 decode path =
@@ -27,7 +25,6 @@ encode : Route -> String
 encode route =
   case route of
     ArticleListPage -> "/"
-    NewArticlePage -> "/article/new"
     EmptyRoute -> ""
 
 redirect : Route -> Effects ()

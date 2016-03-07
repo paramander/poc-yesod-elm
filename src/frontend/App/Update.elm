@@ -7,14 +7,11 @@ import TransitRouter
 import App.Model as App exposing (initialModel, Model)
 import App.Router as Router
 
-import ArticleForm.Model exposing (initialModel)
-import ArticleForm.Update exposing (Action)
 import ArticleList.Update exposing (Action)
 
 type alias Model = App.Model
 
 type Action = ChildArticleListAction ArticleList.Update.Action
-            | ChildArticleFormAction ArticleForm.Update.Action
             | RouterAction (TransitRouter.Action Router.Route)
             | NoOp
 
@@ -36,10 +33,6 @@ routerConfig = { mountRoute = mountRoute
 mountRoute : Router.Route -> Router.Route -> Model -> (Model, Effects Action)
 mountRoute prev route model =
   case route of
-    Router.NewArticlePage ->
-      ( { model | articleForm = ArticleForm.Model.initialModel }
-      , Effects.none
-      )
     Router.ArticleListPage ->
       ( model
       , Task.succeed (ChildArticleListAction ArticleList.Update.GetData) |> Effects.task
@@ -56,13 +49,6 @@ update action model =
       in
         ( { model | articleList = childModel }
         , Effects.map ChildArticleListAction childEffects
-        )
-    ChildArticleFormAction act ->
-      let
-        (childModel, childEffects, maybeArticle) = ArticleForm.Update.update act model.articleForm
-      in
-        ( { model | articleForm = childModel }
-        , Effects.map ChildArticleFormAction childEffects
         )
     RouterAction routeAction ->
       TransitRouter.update routerConfig routeAction model
