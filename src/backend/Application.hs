@@ -33,9 +33,15 @@ appMain = do
 
 develMain :: IO ()
 develMain = do
-    let elmConfig = EW.WatchConfig { watchDir = "src/frontend"
-                                   , compileFile = "Main.elm"
-                                   , outputDir = "src/static/app.js"
-                                   }
-    forkIO $ EW.watchWithConfig elmConfig
+    let appConfig =   EW.WatchConfig { watchDir = "src/frontend"
+                                     , compileFile = "Main.elm"
+                                     , outputDir = "src/static/app.js"
+                                     }
+    let adminConfig = EW.WatchConfig { watchDir = "src/frontend"
+                                     , compileFile = "AdminMain.elm"
+                                     , outputDir = "src/static/admin.js"
+                                     }
+
+    forkIO $ EW.watchWithConfig appConfig
+    forkIO $ EW.watchWithConfig adminCOnfig
     appMain
