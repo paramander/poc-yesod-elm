@@ -1,6 +1,6 @@
 module App.View where
 
-import App.Model as App exposing (initialModel, Model)
+import App.Model as App exposing (Model)
 import App.Update exposing (Action)
 import App.Router exposing (linkAttrs, Route)
 
