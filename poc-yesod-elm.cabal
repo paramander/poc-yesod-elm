@@ -10,6 +10,9 @@ Flag dev
 executable         poc-yesod-elm
     hs-source-dirs: src/backend
     other-modules:  Application
+                  , Model
+                  , Model.Persist
+                  , Model.Page
 
     if flag(dev)
         main-is:       DevelMain.hs

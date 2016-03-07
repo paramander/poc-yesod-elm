@@ -24,6 +24,7 @@ import Yesod.Lucid
 import Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS
 import qualified Watcher as EW
+import Model
 
 data App = App
     { appStatic :: EmbeddedStatic
@@ -36,25 +37,6 @@ mkEmbeddedStatic True "embeddedStatic" [embedDir "src/static"]
 #else
 mkEmbeddedStatic False "embeddedStatic" [embedDir "src/static"]
 #endif
-
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Page
-    name Text
-    html Text
-    deriving Show
-|]
-
-instance ToJSON (Entity Page) where
-    toJSON (Entity pid p) = object
-        [ "id" .= pid
-        , "title" .= pageName p
-        , "content" .= pageHtml p
-        ]
-
-instance FromJSON Page where
-    parseJSON (Object v) = Page
-        <$> v .: "title"
-        <*> v .: "content"
 
 mkYesod "App" [parseRoutes|
 /static StaticR EmbeddedStatic appStatic
