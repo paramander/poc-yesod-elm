@@ -1,18 +1,17 @@
 import StartApp
-
 import Effects exposing (Never)
 import Task
 import Signal
-
 import App.Update exposing (init, update, actions)
 import App.View exposing (view)
 
 app =
-  StartApp.start { init = App.Update.init initialPath
-                 , update = App.Update.update
-                 , view = App.View.view
-                 , inputs = [ actions ]
-                 }
+  StartApp.start
+            { init = init initialPath
+            , update = update
+            , view = view
+            , inputs = [actions]
+            }
 
 main =
   app.html

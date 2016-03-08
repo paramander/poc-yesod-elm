@@ -34,7 +34,7 @@ appMain = do
 
 develMain :: IO ()
 develMain = do
-    mapM_ (forkIO . EW.watchWithConfig . createWatcherConfig) [("Main", "app"), ("AdminMain", "admin")]
+    mapM_ (forkIO . EW.watchWithConfig . createWatcherConfig) [("Public", "app"), ("Admin", "admin")]
     appMain
     where
         createWatcherConfig (input, output) = EW.WatchConfig
