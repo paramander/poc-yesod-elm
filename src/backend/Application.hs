@@ -10,6 +10,7 @@ import System.Environment (lookupEnv)
 import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet)
 import Yesod
 import Yesod.Default.Config2 (makeYesodLogger)
+import Data.Monoid ((<>))
 import qualified Data.ByteString.Char8 as BS
 import qualified Watcher as EW
 import Foundation
@@ -33,15 +34,11 @@ appMain = do
 
 develMain :: IO ()
 develMain = do
-    let appConfig =   EW.WatchConfig { watchDir = "src/frontend"
-                                     , compileFile = "Main.elm"
-                                     , outputDir = "src/static/app.js"
-                                     }
-    let adminConfig = EW.WatchConfig { watchDir = "src/frontend"
-                                     , compileFile = "AdminMain.elm"
-                                     , outputDir = "src/static/admin.js"
-                                     }
-
-    forkIO $ EW.watchWithConfig appConfig
-    forkIO $ EW.watchWithConfig adminCOnfig
+    mapM_ (forkIO . EW.watchWithConfig . createWatcherConfig) [("Main", "app"), ("AdminMain", "admin")]
     appMain
+    where
+        createWatcherConfig (input, output) = EW.WatchConfig
+            { watchDir = "src/frontend"
+            , compileFile = input <> ".elm"
+            , outputDir = "src/static/" <> output <> ".js"
+            }
