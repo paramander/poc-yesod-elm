@@ -11,7 +11,7 @@ app =
             { init = init initialPath
             , update = update
             , view = view
-            , inputs = [actions]
+            , inputs = [ actions ]
             }
 
 main =
